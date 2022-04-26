@@ -1,0 +1,1165 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h> 
+void impresion_de_Tablero(char Tablero[][5]);
+void Mover_Cabra(char Tablero[][5],int Cx,int Cy);
+void cpu_Mover_Cabra(char Tablero[][5],int Cx,int Cy);
+void Menu_juego(char Tablero[][5]);
+void carga_de_Tablero(char Tablero[][5]);
+void Funcion_Tigre(int x, int y, int *CoC, char Tablero[][5]);
+void Funcion_carga_Cabra(char Tablero[][5],int xC,int yC);
+void cpu_Tigres(int x, int y,int *CoC, char Tablero[][5]);
+void cpu_carga_Cabra(char Tablero[][5],int xC,int yC);
+void Ganador(char Tablero[][5],int ganador);
+int main ()//Funcion principal deljuego 
+{
+	system("Color 0E");//Csambiar el color de la interfaz del juego 
+	int x;//indice de filas de la matriz para el movimiento de los tigres
+	int y;//indice de columnas de la matriz para el movimiento de los tigres
+	int CoC;//cantidad de veces que los trigres van cominedo cabras 
+	int xC;//indice de filas de la matriz para la carga al tablero de las cabras
+	int yC;//indice de columnas de la matriz para la carga al tablero de las cabras
+	int Cx;//indice de filas de la matriz para el movimiento de las cabras
+	int Cy;//indice de columnas de la matriz para el movimiento de las cabras
+	int Cantidad_de_turnos;//cantidad de turnos que se jugadas en la partida
+	int Guia;//informacion que ingresa el jugador para saber si inicia como tigre o cabra
+	int ganador;//utilizada en la funcion ganador 
+	int auxiliar=0;//utilizada en el bucle While principal del juego  
+	char Tablero [5][5];
+	int turno;// sorteo del primer turno quien juega primero
+	srand(time(NULL));
+	turno=rand()%2;
+	carga_de_Tablero(Tablero);
+	impresion_de_Tablero(Tablero);
+	Menu_juego(Tablero);
+	printf("\ningrese la cantidad maxima de turnos: ");
+	fflush(stdin);
+	scanf("%d",&Cantidad_de_turnos);
+	do{
+		auxiliar++;
+		if(turno==0 && auxiliar<20){
+			impresion_de_Tablero(Tablero);
+			Funcion_Tigre( x,y,&CoC,Tablero);
+			impresion_de_Tablero(Tablero);
+			cpu_carga_Cabra(Tablero,xC,yC);
+			impresion_de_Tablero(Tablero);
+			Ganador(Tablero,ganador);				
+		}
+		else if(turno==1 && auxiliar<20){
+			impresion_de_Tablero(Tablero);
+			Funcion_carga_Cabra(Tablero,xC,yC);
+			impresion_de_Tablero(Tablero);
+			cpu_Tigres(x,y,&CoC,Tablero);
+			impresion_de_Tablero(Tablero);
+			Ganador(Tablero,ganador);
+		}
+		else if(auxiliar>21){
+			if(turno==1){
+				impresion_de_Tablero(Tablero);
+				Mover_Cabra(Tablero,Cx,Cy);
+				impresion_de_Tablero(Tablero);
+				cpu_Tigres(x,y,&CoC,Tablero);
+				impresion_de_Tablero(Tablero);
+				Ganador(Tablero,ganador);				
+			}
+			else if(turno==0){
+				impresion_de_Tablero(Tablero);
+				Funcion_Tigre( x,y,&CoC,Tablero);
+				impresion_de_Tablero(Tablero);
+				cpu_Mover_Cabra(Tablero,Cx,Cy);
+				impresion_de_Tablero(Tablero);
+				Ganador(Tablero,ganador);				
+			}
+		}
+		else if(CoC==5){	//una vez que los tigres coman a todas las cabras
+			printf("\nGANAN LOS TIGRES!!!\n");
+			break;
+		}
+		else if(ganador==0){
+			printf("\n GANAN LAS CABRAS!!!\\n");//una ve que las cabras bloqueen a los tigres
+			break;
+		}
+		
+	}while(auxiliar<Cantidad_de_turnos);
+	if(CoC!=5 && ganador!=1){
+		printf("\nHAY UN EMPATE\n");// en el caso en el que ni la cabra ni los tigres pueden hacer algun movimiento valido
+	}
+	printf("Autores: 	GUSTAVO DOMINGUEZ Y ENRIQUE OCAMPOS \n");
+	printf("Agradecimientos: A DIOS Y A LAS \nPROFESORAS LINDA RIQUELME Y NATHALIE AQUINO \nPOR LA AYUDA Y LAS DIRECCIONES DADAS ");
+	return 0;
+	
+}
+ void carga_de_Tablero(char Tablero[][5])//Definimos una funcion de tipo Void para el tablero
+ {
+ 	int indice_x;
+ 	int indice_y;
+ 	for(indice_x=0;indice_x<5;indice_x++){
+ 		for (indice_y=0;indice_y<5;indice_y++){
+ 			if(indice_x==0 and indice_y==0){
+ 				Tablero[indice_x][indice_y]='T';
+			}	 
+			else if(indice_x==0 and indice_y==4){
+				Tablero[indice_x][indice_y]='T';	
+			}
+ 			else if(indice_x==4 and indice_y==0){
+ 				Tablero[indice_x][indice_y]='T';	
+			}
+ 			else if(indice_x==4 and indice_y==4){
+ 				Tablero[indice_x][indice_y]='T';
+			}
+			else{
+				Tablero[indice_x][indice_y]='X';
+			}	
+			 
+		 }	 
+	 }
+ }
+void impresion_de_Tablero(char Tablero[][5]){//funcion con la que imprimo el tablero 
+ char letra1='0',letra2 = '0';
+    int  i , j , x ;
+    printf("\n");
+    for(i=0 ; i<5 ; i++){
+        for (j=0 ; j<5 ; j++){
+            if (j==0){
+                printf(" %c  %c-------",letra1++,Tablero[i][j]);
+            }
+            else{
+                if(j==4){
+                    printf("%c ", Tablero[i][j]);
+                }
+                else{
+                    printf("%c-------", Tablero[i][j]);
+                }
+            }
+        }
+        if (i==0 or i==2){
+            printf("\n");
+            printf("    | *     |     * | *     |     * |\n");
+            printf("    |   *   |   *   |   *   |   *   |\n");
+            printf("    |     * | *     |     * | *     |");
+
+        }
+        if (i==1 or i==3){
+            printf("\n");
+            printf("    |     * | *     |     * | *     |\n");
+            printf("    |   *   |   *   |   *   |   *   |\n");
+            printf("    | *     |     * | *     |     * |");
+
+        }
+        if (i==4){
+            printf("\n\n");
+            for (x= 0 ; x<5 ; x++){
+                if (x==0){
+                    printf("    %c    ",letra2++);
+                }
+                else{
+                    if (x<4){
+                        printf("   %c    ",letra2++);
+                    }
+                    else{
+                        printf("   %c",letra2++);
+                    }
+                }
+            }
+        }
+        printf("\n");
+    }
+ }
+void Funcion_Tigre(int x, int y,int *CoC, char Tablero[][5]){ 
+	printf("\nJuega de lado de los Tigres\n");
+	printf(" Los controles son:\n Mover Arriba: 'W'(la letra ingresada debe de ser mayuscula siempre de lo contrario sera un comando no valido\n Mover Abajo: 'S'\n Mover a la Derecha: 'D'\n Mover a la Izquierda: 'A'\n Mover en Diagonal superior derecho: 'E'\n Mover en diagonal superior izquierdo:'Q'\n Mover en diagonal inferior derecho:'V'\n Mover en diagonal inferior izquierdo 'Z' \n) ");
+	int iterador;// Es un auxiliar que se usara para el ciclo Do While
+	char Aux;//Para guadar los comandos ingresados por el jugador
+	do{
+		iterador = 0;//inicia en 0, asi mientras que SEL sea 0 el ciclo while seguira 
+		printf("\n Ingrese la coordenada x del tigre que quiere seleccionar: ");
+		fflush(stdin);
+		scanf("%d",&x);
+		printf("\n ingrese la coordenada y del tigre que quiere elejir: ");
+		fflush(stdin);
+		scanf("%d",&y);
+		if(x>=0 && x<5 && y>=0 && y<5){
+			if(Tablero[x][y]=='T'){
+				printf("\n Ingrese un comando para mover a los tigres: ");
+				fflush(stdin);
+				scanf("%c",&Aux);
+				if(Aux=='W'){
+					if((x-1)>=0 && (x-2)>=0){
+						if(Tablero[x-1][y]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x-1][y]='T';
+						}
+						else if(Tablero[x-1][y]=='C'){
+							if(Tablero[x-2][y]=='X'){
+								Tablero[x-2][y]='T';
+								Tablero[x-1][y]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x-2][y]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;						
+					}
+				}
+				else if(Aux=='S'){
+					if((x+1)>=0 && (x+1)<5){
+						if(Tablero[x+1][y]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x+1][y]='T';
+						}
+						else if(Tablero[x+1][y]=='C'){
+							if(Tablero[x+2][y]=='X'){
+								Tablero[x+2][y]='T';
+								Tablero[x+1][y]='X';
+								Tablero[x][y]='X';							
+								*CoC++;
+							}
+							else if(Tablero[x+2][y]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+								
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;						
+					}
+				}
+				else if(Aux=='D'){
+					if((y+1)>=0 && (y+1)<5){
+						if(Tablero[x][y+1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x][y+1]='T';
+						}
+						else if(Tablero[x][y+1]=='C'){
+							if(Tablero[x][y+2]=='X'){
+								Tablero[x][y+2]='T';
+								Tablero[x][y+1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x][y+2]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+								
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;						
+					}
+				}
+				else if(Aux=='A'){
+					if((y-1)>=0 && (y-1)<5){
+						if(Tablero[x][y-1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x][y-1]='T';
+						}
+						else if(Tablero[x][y-1]=='C'){
+							if(Tablero[x][y-2]=='X'){
+								Tablero[x][y-2]='T';
+								Tablero[x][y-1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x][y-2]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+								
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido ");
+							iterador=1;
+						}						
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;
+					}										
+				}
+				else if(Aux=='Q' && (x+y)%2==0){
+					if((x-1)>=0 && (y-1)>=0){
+						if(Tablero[x-1][y-1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x-1][y-1]='T';
+						}
+						else if(Tablero[x-1][y-1]=='C'){
+							if(Tablero[x-2][y-2]=='X'){
+								Tablero[x-2][y-2]='T';
+								Tablero[x-1][y-1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x-2][y-2]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+								
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;
+					}																				
+				}
+				else if(Aux=='E' && (x+y)%2==0){
+					if((x-1)>=0 && (y+1)<5){
+						if(Tablero[x-1][y+1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x-1][y+1]='T';
+						}
+						else if(Tablero[x-1][y+1]=='C'){
+							if(Tablero[x-2][y+2]=='X'){
+								Tablero[x-2][y+2]='T';
+								Tablero[x-1][y+1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x-2][y+2]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+								
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;
+					}
+				}
+				else if(Aux=='Z' && (x+y)%2==0){
+					if((x+1)<5 && (y-1)<=0 &&(y-2)<=0){
+						if(Tablero[x+1][y-1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x+1][y-1]='T';
+						}
+						else if(Tablero[x+1][y-1]=='C'){
+							if(Tablero[x+2][y-2]=='X'){
+								Tablero[x+2][y-2]='T';
+								Tablero[x+1][y-1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x+2][y-2]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+								
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;							
+					}
+				}
+				else if(Aux=='V' && (x+y)%2==0){
+					if((x+1)<5 && (y+1)<5 && (x+2)<5 && (y+2)<5){
+						if(Tablero[x+1][y+1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x+1][y+1]='T';
+						}
+						else if(Tablero[x+1][y+1]=='C'){
+							if(Tablero[x+2][y+2]=='X'){
+								Tablero[x+2][y+2]='T';
+								Tablero[x+1][y+1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x+2][y+2]=='C'){
+								printf("\n  El tigre ya no puede mover a esta posicion");
+								iterador=1;
+								
+							}
+							else{
+								printf("Comando no Valido ");
+								iterador=1;
+							}
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("\n Comando no Valido");
+						iterador=1;						
+					}
+				}
+				else{
+					printf("\n Comando no Valido");
+					iterador=1;
+				}					
+			}
+			else{
+				printf("\n Comando no valido ");
+				iterador = 1;
+			}
+		}
+		else{
+			printf("\n Comando no valido");
+			iterador = 1;
+		}
+	}while(iterador==1);
+}
+void cpu_Tigres(int x, int y,int *CoC, char Tablero[][5]){
+	printf("\nCPU pensando, por favor espere :v \n");
+	int iterador;
+	int Aux;
+	do{
+		iterador = 0;//inicia en 0, asi mientras que iterador sea 0 el ciclo while seguira
+		x=rand()%5;
+		y=rand()%5; 
+		if(x>=0 && x<5 && y>=0 && y<5){
+			if(Tablero[x][y]=='T'){
+				Aux=rand()%8;
+				if(Aux==0){
+					if((x-1)>=0 && (x-2)>=0){
+						if(Tablero[x-1][y]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x-1][y]='T';
+						}
+						else if(Tablero[x-1][y]=='C'){
+							if(Tablero[x-2][y]=='X'){
+								Tablero[x-2][y]='T';
+								Tablero[x-1][y]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x-2][y]=='C'){
+
+								iterador=1;
+							}
+							else{
+
+								iterador=1;
+							}
+						}
+						else{
+
+							iterador=1;
+						}
+					}
+					else{
+
+						iterador=1;						
+					}
+				}
+				else if(Aux==1){
+					if((x+1)>=0 && (x+1)<5){
+						if(Tablero[x+1][y]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x+1][y]='T';
+						}
+						else if(Tablero[x+1][y]=='C'){
+							if(Tablero[x+2][y]=='X'){
+								Tablero[x+2][y]='T';
+								Tablero[x+1][y]='X';
+								Tablero[x][y]='X';							
+								*CoC++;
+							}
+							else if(Tablero[x+2][y]=='C'){
+								iterador=1;
+								
+							}
+							else{
+
+								iterador=1;
+							}
+						}
+						else{
+
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;						
+					}
+				}
+				else if(Aux==2){
+					if((y+1)>=0 && (y+1)<5){
+						if(Tablero[x][y+1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x][y+1]='T';
+						}
+						else if(Tablero[x][y+1]=='C'){
+							if(Tablero[x][y+2]=='X'){
+								Tablero[x][y+2]='T';
+								Tablero[x][y+1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x][y+2]=='C'){
+								iterador=1;
+								
+							}
+							else{
+								iterador=1;
+							}
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;						
+					}
+				}
+				else if(Aux==3){
+					if((y-1)>=0 && (y-1)<5){
+						if(Tablero[x][y-1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x][y-1]='T';
+						}
+						else if(Tablero[x][y-1]=='C'){
+							if(Tablero[x][y-2]=='X'){
+								Tablero[x][y-2]='T';
+								Tablero[x][y-1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x][y-2]=='C'){
+								iterador=1;
+								
+							}
+							else{
+
+								iterador=1;
+							}
+						}
+						else{
+
+							iterador=1;
+						}						
+					}
+					else{
+
+						iterador=1;
+					}										
+				}
+				else if(Aux==4 && (x+y)%2==0){
+					if((x-1)>=0 && (y-1)>=0){
+						if(Tablero[x-1][y-1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x-1][y-1]='T';
+						}
+						else if(Tablero[x-1][y-1]=='C'){
+							if(Tablero[x-2][y-2]=='X'){
+								Tablero[x-2][y-2]='T';
+								Tablero[x-1][y-1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x-2][y-2]=='C'){
+
+								iterador=1;
+								
+							}
+							else{
+
+								iterador=1;
+							}
+						}
+						else{
+
+							iterador=1;
+						}
+					}
+					else{
+
+						iterador=1;
+					}																				
+				}
+				else if(Aux==5 && (x+y)%2==0){
+					if((x-1)>=0 && (y+1)<5){
+						if(Tablero[x-1][y+1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x-1][y+1]='T';
+						}
+						else if(Tablero[x-1][y+1]=='C'){
+							if(Tablero[x-2][y+2]=='X'){
+								Tablero[x-2][y+2]='T';
+								Tablero[x-1][y+1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x-2][y+2]=='C'){
+
+								iterador=1;
+								
+							}
+							else{
+
+								iterador=1;
+							}
+						}
+						else{
+
+							iterador=1;
+						}
+					}
+					else{
+
+						iterador=1;
+					}
+				}
+				else if(Aux==6 && (x+y)%2==0){
+					if((x+1)<5 && (y-1)<=0 &&(y-2)<=0){
+						if(Tablero[x+1][y-1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x+1][y-1]='T';
+						}
+						else if(Tablero[x+1][y-1]=='C'){
+							if(Tablero[x+2][y-2]=='X'){
+								Tablero[x+2][y-2]='T';
+								Tablero[x+1][y-1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x+2][y-2]=='C'){
+
+								iterador=1;
+								
+							}
+							else{
+
+								iterador=1;
+							}
+						}
+						else{
+
+							iterador=1;
+						}
+					}
+					else{
+
+						iterador=1;							
+					}
+				}
+				else if(Aux==7 && (x+y)%2==0){
+					if((x+1)<5 && (y+1)<5 && (x+2)<5 && (y+2)<5){
+						if(Tablero[x+1][y+1]=='X'){
+							Tablero[x][y]='X';
+							Tablero[x+1][y+1]='T';
+						}
+						else if(Tablero[x+1][y+1]=='C'){
+							if(Tablero[x+2][y+2]=='X'){
+								Tablero[x+2][y+2]='T';
+								Tablero[x+1][y+1]='X';
+								Tablero[x][y]='X';
+								*CoC++;
+							}
+							else if(Tablero[x+2][y+2]=='C'){
+
+								iterador=1;
+								
+							}
+							else{
+
+								iterador=1;
+							}
+						}
+						else{
+
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;						
+					}
+				}
+				else{
+					iterador=1;
+				}					
+			}
+			else{
+				iterador = 1;
+			}
+		}
+		else{
+			iterador = 1;
+		}
+	}while(iterador==1);	
+}
+void Funcion_carga_Cabra(char Tablero[][5],int xC,int yC){
+	printf("\nJuega de lado de las Cabras\n");
+	int iterador_2;
+	do{
+		iterador_2 = 0;	
+		printf("\ningrese la coodenada X donde desea agregar una cabra: ");
+		fflush(stdin);
+		scanf("%d",&xC);
+		printf("\ningrese la coodenada Y donde desea agregar una cabra: ");
+		fflush(stdin);
+		scanf("%d",&yC);		
+		if(Tablero[xC][yC]=='X'){
+			Tablero[xC][yC]='C';
+		}
+		else{
+			printf("\nComando no Valido\n");
+			iterador_2=1;
+		}	
+	}while(iterador_2 == 1);		
+}
+void cpu_carga_Cabra(char Tablero[][5],int xC,int yC){
+	printf("\nCPU pensando, por favor espere :v \n");
+	int iterador_2;
+	iterador_2 = 0;	
+	do{
+		xC=rand()%5;
+		yC=rand()%5;		
+		if(Tablero[xC][yC]=='X'){
+			Tablero[xC][yC]='C';
+		}
+		else{
+			iterador_2=1;
+		}	
+	}while(iterador_2 == 1);
+}
+void Mover_Cabra(char Tablero[][5],int Cx,int Cy){
+	printf("\nTodas las cabras han ingresado al Tablero, puede moverlas \n");
+	printf(" Los controles son:\n Mover Arriba: 'W'(la letra ingresada debe de ser mayuscula siempre de lo contrario sera un comando no valido\n Mover Abajo: 'S'\n Mover a la Derecha: 'D'\n Mover a la Izquierda: 'A'\n Mover en Diagonal superior derecho: 'E'\n Mover en diagonal superior izquierdo:'Q'\n Mover en diagonal inferior derecho:'V'\n Mover en diagonal inferior izquierdo 'Z' \n) ");
+	int iterador;// Es un auxiliar que se usara para el ciclo Do While
+	char Aux;
+	do{
+		iterador = 0;//inicia en 0, asi mientras que SEL sea 0 el ciclo while seguira 
+		printf("\n Ingrese la coordenada x del tigre que quiere seleccionar: ");
+		fflush(stdin);
+		scanf("%d",&Cx);
+		printf("\n ingrese la coordenada y del tigre que quiere elejir: ");
+		fflush(stdin);
+		scanf("%d",&Cy);
+		if(Cx>=0 && Cx<5 && Cy>=0 && Cy<5){
+			if(Tablero[Cx][Cy]=='C'){
+				printf("\n Ingrese un comando para mover a los tigres: ");
+				fflush(stdin);
+				scanf("%c",&Aux);
+				if(Aux=='W'){
+					if((Cx-1)>=0 && (Cx-2)>=0){
+						if(Tablero[Cx-1][Cy]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx-1][Cy]='C';
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;						
+					}
+				}
+				else if(Aux=='S'){
+					if((Cx+1)>=0 && (Cx+1)<5){
+						if(Tablero[Cx+1][Cy]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx+1][Cy]='C';
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;						
+					}
+				}
+				else if(Aux=='D'){
+					if((Cy+1)>=0 && (Cy+1)<5){
+						if(Tablero[Cx][Cy+1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx][Cy+1]='C';
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;						
+					}
+				}
+				else if(Aux=='A'){
+					if((Cy-1)>=0 && (Cy-1)<5){
+						if(Tablero[Cx][Cy-1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx][Cy-1]='C';
+						}
+						else{
+							printf("Comando no valido ");
+							iterador=1;
+						}						
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;
+					}										
+				}
+				else if(Aux=='Q' && (Cx+Cy)%2==0){
+					if((Cx-1)>=0 && (Cy-1)>=0){
+						if(Tablero[Cx-1][Cy-1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx-1][Cy-1]='C';
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;
+					}																				
+				}
+				else if(Aux=='E' && (Cx+Cy)%2==0){
+					if((Cx-1)>=0 && (Cy+1)<5){
+						if(Tablero[Cx-1][Cy+1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx-1][Cy+1]='C';
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;
+					}
+				}
+				else if(Aux=='Z' && (Cx+Cy)%2==0){
+					if((Cx+1)<5 && (Cy-1)<=0 &&(Cy-2)<=0){
+						if(Tablero[Cx+1][Cy-1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx+1][Cy-1]='C';
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("Comando no valido");
+						iterador=1;							
+					}
+				}
+				else if(Aux=='V' && (Cx+Cy)%2==0){
+					if((Cx+1)<5 && (Cy+1)<5 && (Cx+2)<5 && (Cy+2)<5){
+						if(Tablero[Cx+1][Cy+1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx+1][Cy+1]='C';
+						}
+						else{
+							printf("Comando no valido");
+							iterador=1;
+						}
+					}
+					else{
+						printf("\n Comando no Valido");
+						iterador=1;						
+					}
+				}
+				else{
+					printf("\n Comando no Valido");
+					iterador=1;
+				}					
+			}
+			else{
+				printf("\n Comando no valido ");
+				iterador = 1;
+			}
+		}
+		else{
+			printf("\n Comando no valido");
+			iterador = 1;
+		}
+	}while(iterador==1);	
+}
+void cpu_Mover_Cabra(char Tablero[][5],int Cx,int Cy){
+	int iterador;// Es un auxiliar que se usara para el ciclo Do While
+	char Aux;
+	do{
+		iterador = 0;//inicia en 0, asi mientras que SEL sea 0 el ciclo while seguira 
+		Cx=rand()%5;
+		Cy=rand()%5;
+		if(Cx>=0 && Cx<5 && Cy>=0 && Cy<5){
+			if(Tablero[Cx][Cy]=='C'){
+				Aux=rand()%8;
+				if(Aux==0){
+					if((Cx-1)>=0 && (Cx-2)>=0){
+						if(Tablero[Cx-1][Cy]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx-1][Cy]='C';
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;						
+					}
+				}
+				else if(Aux==1){
+					if((Cx+1)>=0 && (Cx+1)<5){
+						if(Tablero[Cx+1][Cy]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx+1][Cy]='C';
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;						
+					}
+				}
+				else if(Aux==2){
+					if((Cy+1)>=0 && (Cy+1)<5){
+						if(Tablero[Cx][Cy+1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx][Cy+1]='C';
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;						
+					}
+				}
+				else if(Aux==3){
+					if((Cy-1)>=0 && (Cy-1)<5){
+						if(Tablero[Cx][Cy-1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx][Cy-1]='C';
+						}
+						else{
+							iterador=1;
+						}						
+					}
+					else{
+						iterador=1;
+					}										
+				}
+				else if(Aux==4 && (Cx+Cy)%2==0){
+					if((Cx-1)>=0 && (Cy-1)>=0){
+						if(Tablero[Cx-1][Cy-1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx-1][Cy-1]='C';
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;
+					}																				
+				}
+				else if(Aux==5 && (Cx+Cy)%2==0){
+					if((Cx-1)>=0 && (Cy+1)<5){
+						if(Tablero[Cx-1][Cy+1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx-1][Cy+1]='C';
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;
+					}
+				}
+				else if(Aux==6 && (Cx+Cy)%2==0){
+					if((Cx+1)<5 && (Cy-1)<=0 &&(Cy-2)<=0){
+						if(Tablero[Cx+1][Cy-1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx+1][Cy-1]='C';
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;							
+					}
+				}
+				else if(Aux==7 && (Cx+Cy)%2==0){
+					if((Cx+1)<5 && (Cy+1)<5 && (Cx+2)<5 && (Cy+2)<5){
+						if(Tablero[Cx+1][Cy+1]=='X'){
+							Tablero[Cx][Cy]='X';
+							Tablero[Cx+1][Cy+1]='C';
+						}
+						else{
+							iterador=1;
+						}
+					}
+					else{
+						iterador=1;						
+					}
+				}
+				else{
+					iterador=1;
+				}					
+			}
+			else{
+				iterador = 1;
+			}
+		}
+		else{
+			iterador = 1;
+		}
+	}while(iterador==1);
+}
+void Ganador(char Tablero[][5],int ganador){
+	int k;//indice x con que recorre la matriz del tablero
+	int j;//indice y con que recorre la matriz del tablero
+	for(k=0;k<5;k++){
+		for(j=0;j<5;j++){
+			if(Tablero[k][j]=='T'){
+				if(Tablero[k+1][j]=='X'){
+					ganador=1;
+				}
+				else if(Tablero[k-1][j]=='X'){
+					ganador=1;
+				}
+				else if(Tablero[k][j+1]=='X'){
+					ganador=1;
+				}
+				else if(Tablero[k][j-1]=='X'){
+					ganador=1;
+				}
+				else if((k+j)%2==0 && Tablero[k+1][j+1]=='X'){
+					ganador=1;
+				}
+				else if((k+j)%2==0 && Tablero[k-1][j-1]=='X'){
+					ganador=1;
+				}
+				else if(Tablero[k+2][j]=='X'){
+					ganador=1;
+				}
+				else if(Tablero[k-2][j]=='X'){
+					ganador=1;
+				}
+				else if(Tablero[k][j+2]=='X'){
+					ganador=1;
+				}
+				else if(Tablero[k][j-2]=='X'){
+					ganador=1;
+				}
+				else if((k+j)%2==0 && Tablero[k+2][j+2]=='X'){
+					ganador=1;
+				}
+				else if((k+j)%2==0 && Tablero[k-2][j-2]=='X'){
+					ganador=1;
+				}
+				else{
+					printf("\nGANAN LAS CABRAS!!!!\n");
+					ganador=0;
+				}
+			}	
+		}		
+	}		
+} 
+void Menu_juego(char Tablero[][5]){
+	int Aux;
+	int Au_x;
+	Au_x=0;
+	printf("\n Bienvenido a Bag chal\n");
+	do{
+		printf("	Menu: \n");
+		printf("1-) Instrucciones del Juego \n");
+		printf("2-) Comenzar el Juego \n");
+		printf("Ingrese un comando (1) o (2): ");
+		fflush(stdin);
+		scanf("%d",&Aux);
+		if(Aux==1){
+			printf("\n 	Sobre Bagh Chall	\n");
+			printf("El Bagh Chal es un juego tradicional originario del sur de Asia.\n Actualmente sigue siendo un popular juego en Nepal. \n");
+			printf("Es uno de los m�s interesantes juegos de caza \n(aquellos cuya cararacter�stica com�n es la \n lucha entre dos fuerzas desiguales con distintos objetivos,\n y cuyas piezas suelen simbolizar animales) \n ");
+			printf("La expresi�n Bagh Chal significa, en Nepal�, algo parecido a mover los tigres.\n");
+			printf("Se enfrentan dos bandos; \n uno de ellos cuenta con 4 tigres que intentan capturar a las 20 cabras del bando contrario,\n mientras �stas tratan de impedir moverse a los tigres.\n Cuando no se dispone de figuras que representan los propios animales, \n suelen utilizarse piezas negras para simbolizar a los tigres y blancas para las cabras.\n");
+			printf("\n Moviminetos del Juego \n");
+			printf("Si juega de lado de los TIGRES: \n");
+			printf("PRIMERO) Para seleccionar un tigre debera fijarse en la tabla de coordenadas del Tablero\n e ingresar la coordenada del Tigre que quiere mover \n ");
+			printf("LUEGO) Una vez seleccionado el Tigre los controles son:\n Mover Arriba: 'W'(la letra ingresada debe de ser mayuscula siempre de lo contrario sera un comando no valido\n Mover Abajo: 'S'\n Mover a la Derecha: 'D'\n Mover a la Izquierda: 'A'\n Mover en Diagonal superior derecho: 'E'\n Mover en diagonal superior izquierdo:'Q'\n Mover en diagonal inferior derecho:'V'\n Mover en diagonal inferior izquierdo 'Z' \n) ");
+			printf("\n OBJETIVOS DEL JUEGO \n");
+			printf("Dentro de la cantidad de turnos ingresado\n");
+			printf("	*Bando de los Tigres:\n Comer 5 cabras saltando una casilla en cima de ellas\n	 *Bando de las Cabras:\n Capturar a los 4 Tigres de modo que no puedan moverse en ningun lado\n");
+			printf("Las cabras van ingresando una a una sin poder moverse hasta que ingresen todas las cabras\n Una vez ingresadas todas \n pueden moverse ");
+			printf("Los tigres pueden moverse desde el primer turno de la partida\n");
+			printf("Los Dos bandos solo pueden moverse a una casilla adyasente por turno\n");	
+			Au_x=3;
+		}
+		else if(Aux==2){
+			printf("	Buena suerte\n ");
+			break;
+		}
+		else{
+			printf("\nComando no valido\n");
+			Au_x=3;
+		}
+	}while(Au_x==3);
+}
